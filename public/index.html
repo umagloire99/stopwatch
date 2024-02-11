@@ -38,6 +38,12 @@
 
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <script>
+        // Get the URL query string
+        const queryString = window.location.search;
+
+        // Create a new URLSearchParams object with the query string
+        const params = new URLSearchParams(queryString);
+
         $(document).ready(function () {
             let timer;
             let hours = 0;
@@ -46,7 +52,7 @@
             let previousTime = 0;
             let previousDistance = 5;
             let predictedTime = 0;
-            let distance = 42;
+            let distance = params.get('distance') || 42;
             let trakingTimer = 0;
 
             const pusher = new Pusher('401f1d0958cb4236a24d', {
