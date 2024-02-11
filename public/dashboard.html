@@ -1,0 +1,182 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch Control Panel</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="stopwatch-content">
+        <img src="https://www.ooredoo.qa/web/wp-content/themes/ooredoo-cms/assets/images/Ooredoo_logo.svg"
+            alt="stopwatch" style="width: 200px; height: 150px">
+        <div class="stopwatch-container" style="width: 350px;
+              height: 150px;">
+            <div class="stopwatch-clock">
+                <div class="stopwatch-number" id="hours">00</div>
+                <div class="stopwatch-number">:</div>
+                <div class="stopwatch-number" id="minutes">00</div>
+                <div class="stopwatch-number">:</div>
+                <div class="stopwatch-number" id="seconds">00</div>
+            </div>
+            <div class="stopwatch-text">
+                <div class="stopwatch-time-container">
+                    <p>Est Finish</p>
+                    <p id="est-finish">-</p>
+                </div>
+                <div class="stopwatch-time-container">
+                    <p>Last 5k</p>
+                    <p id="last-k">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; align-items:center; margin-top: 30px; gap:30px">
+        <button class="play-pause-btn" id="stopwatch-play">Play</button>
+        <button class="play-pause-btn" id="stopwatch-pause" style="display:none;">Pause</button>
+        <button class="play-pause-btn" id="stopwatch-capture-last-5k" style="display: none;">Last 5k</button>
+    </div>
+
+
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let timer;
+            let hours = 0;
+            let seconds = 0;
+            let minutes = 0;
+            let previousTime = 0;
+            let previousDistance = 5;
+            let predictedTime = 0;
+            let distance = 42;
+            let trakingTimer = 0;
+
+            const pusher = new Pusher('401f1d0958cb4236a24d', {
+                cluster: 'mt1',
+                encrypted: true
+            });
+
+            const channel = pusher.subscribe('stopwatch-channel');
+
+            channel.bind('stopwatch-state', function (data) {
+                if (data.value == 'pause') {
+                    clearInterval(timer);
+                    $("#stopwatch-pause").hide();
+                    $("#stopwatch-play").show();
+                } else if (data.value == 'reset') {
+                    clearInterval(timer);
+                    $('#hours').text('00');
+                    $('#minutes').text('00');
+                    $('#seconds').text('00');
+                    $("#stopwatch-pause").hide();
+                    $("#stopwatch-play").show();
+                    hours = 0;
+                    seconds = 0;
+                    minutes = 0;
+                    previousTime = 0;
+                    previousDistance = 5;
+                    predictedTime = 0;
+                    trakingTimer = 0;
+                    $("#last-k").text('-');
+                    $("#est-finish").text('-');
+                    $("#stopwatch-capture-last-5k").hide();
+                } else {
+                    timer = setInterval(updateStopwatch, 1000);
+                    $("#stopwatch-play").hide();
+                    $("#stopwatch-pause").show();
+                    $("#stopwatch-capture-last-5k").show();
+                }
+            })
+
+            channel.bind('stopwatch-capture-last-5k', function (data) {
+                if (previousTime == 0) {
+                    previousTime = trakingTimer;
+                } else {
+                    previousTime = previousTime + (trakingTimer - predictedTime);
+                }
+
+                predictedTime = getEstimatedFinishTime();
+
+                $("#last-k").text(formatMilliseconds(previousTime));
+                $("#est-finish").text(formatMilliseconds(predictedTime));
+            });
+
+            $("#stopwatch-play").click(function () {
+                triggerEvent('stopwatch-state', 'play');
+            });
+
+            $("#stopwatch-pause").click(function () {
+                triggerEvent('stopwatch-state', 'pause');
+            });
+
+            $("#stopwatch-capture-last-5k").click(function () {
+                triggerEvent('stopwatch-capture-last-5k', timer);
+            });
+
+            function triggerEvent(eventName, value) {
+                $.post(`/pusher/trigger/${eventName}`, {
+                    value
+                });
+            }
+
+            function updateStopwatch() {
+                seconds++;
+
+                if (seconds >= 60) {
+                    seconds = 0;
+                    minutes++;
+                    if (minutes >= 60) {
+                        minutes = 0;
+                        hours++;
+                        if (hours >= 24) {
+                            hours = 0; // Reset hours after 24 hours
+                        }
+                    }
+                }
+
+                // Update the display
+                $('#hours').text(padZero(hours));
+                $('#minutes').text(padZero(minutes));
+                $('#seconds').text(padZero(seconds));
+
+                trakingTimer = trakingTimer + 1000;
+            }
+
+            function getEstimatedFinishTime() {
+                predictedTime = previousTime * Math.pow((distance / previousDistance), 1.06);
+
+                return predictedTime
+            }
+
+            // Function to pad zeros
+            function padZero(num) {
+                return (num < 10 ? '0' : '') + num;
+            }
+
+            // Function to format milliseconds to hours, minutes, and seconds
+            function formatMilliseconds(milliseconds) {
+                // Convert milliseconds to seconds
+                let seconds = Math.floor(milliseconds / 1000);
+
+                // Calculate hours, minutes, and remaining seconds
+                let hours = Math.floor(seconds / 3600);
+                let minutes = Math.floor((seconds % 3600) / 60);
+                let remainingSeconds = seconds % 60;
+
+                // Format the time
+                let formattedTime = padZero(hours) + ":" + padZero(minutes) + ":" + padZero(remainingSeconds);
+
+                return formattedTime;
+            }
+
+            triggerEvent('stopwatch-state', 'reset');
+        });
+    </script>
+</body>
+
+</html>

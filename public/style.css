@@ -1,0 +1,82 @@
+.stopwatch-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.stopwatch-container {
+    background-color: black;
+    border-radius: 10px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stopwatch-clock {
+    display: flex;
+    font-size: 80px;
+    font-weight: bold;
+    color: red;
+}
+
+.stopwatch-number {
+    margin: 0 5px;
+}
+
+.stopwatch-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-self: center;
+    margin-top: 10px;
+}
+
+.stopwatch-time-container {
+    margin-top: 16px;
+    text-align: center;
+    color: red;
+    margin: 15px;
+}
+
+.stopwatch-time-container p {
+    margin: 0;
+    font-size: 20px;
+    color: red;
+    /* Remove white-space: nowrap;  */
+    /* Allow text wrapping if needed */
+}
+
+@media (max-width: 768px) {
+    .stopwatch-clock {
+        font-size: 50px !important;
+        ;
+    }
+
+    .stopwatch-text p {
+        font-size: 20px !important;
+        ;
+    }
+}
+
+.play-pause-btn {
+    background-color: black;
+    border: none;
+    color: red;
+    padding: 15px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.play-pause-btn:hover {
+    border: medium solid black;
+    background-color: white;
+    /* Darker shade of green */
+    color: red;
+}
