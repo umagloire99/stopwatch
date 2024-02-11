@@ -45,6 +45,12 @@
 
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <script>
+        // Get the URL query string
+        const queryString = window.location.search;
+
+        // Create a new URLSearchParams object with the query string
+        const params = new URLSearchParams(queryString);
+
         $(document).ready(function () {
             let timer;
             let hours = 0;
@@ -53,7 +59,7 @@
             let previousTime = 0;
             let previousDistance = 5;
             let predictedTime = 0;
-            let distance = 42;
+            let distance = params.get('distance') || 42;
             let trakingTimer = 0;
 
             const pusher = new Pusher('401f1d0958cb4236a24d', {
@@ -61,7 +67,7 @@
                 encrypted: true
             });
 
-            const channel = pusher.subscribe('stopwatch-channel');
+            const channel = pusher.subscribe('stopwatch-channel' + distance.toString());
 
             channel.bind('stopwatch-state', function (data) {
                 if (data.value == 'pause') {
@@ -107,7 +113,9 @@
             });
 
             $("#stopwatch-play").click(function () {
+                console.log('play');
                 triggerEvent('stopwatch-state', 'play');
+                console.log('play done');
             });
 
             $("#stopwatch-pause").click(function () {
@@ -115,12 +123,13 @@
             });
 
             $("#stopwatch-capture-last-5k").click(function () {
-                triggerEvent('stopwatch-capture-last-5k', timer);
+                triggerEvent('stopwatch-capture-last-5k', trakingTimer);
             });
 
             function triggerEvent(eventName, value) {
                 $.post(`/pusher/trigger/${eventName}`, {
-                    value
+                    value,
+                    distance
                 });
             }
 

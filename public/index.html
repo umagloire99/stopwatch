@@ -60,7 +60,7 @@
                 encrypted: true
             });
 
-            const channel = pusher.subscribe('stopwatch-channel');
+            const channel = pusher.subscribe('stopwatch-channel'+distance);
 
             channel.bind('stopwatch-state', function (data) {
                 if (data.value == 'pause') {
@@ -107,7 +107,8 @@
 
             function triggerEvent(eventName, value) {
                 $.post(`/pusher/trigger/${eventName}`, {
-                    value
+                    value,
+                    distance
                 });
             }
 

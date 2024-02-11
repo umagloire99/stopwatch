@@ -24,10 +24,11 @@ const pusher = new Pusher({
 });
 
 app.post('/pusher/trigger/:eventName', (req, res) => {
-    const { value } = req.body;
+    const { value, distance } = req.body;
     const { eventName } = req.params;
+    console.log(distance);
     
-    pusher.trigger('stopwatch-channel', eventName, {
+    pusher.trigger('stopwatch-channel'+distance, eventName, {
         value
     });
 
