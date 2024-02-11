@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-time Stopwatch</title>
+    <title>Stopwatch Control Panel</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -36,6 +36,25 @@
         </div>
     </div>
 
+    <div style="display:flex; justify-content:center; align-items:center; margin-top: 30px; gap:30px">
+        <button class="play-pause-btn" id="stopwatch-play">Play</button>
+        <button class="play-pause-btn" id="stopwatch-pause" style="display:none;">Pause</button>
+        <button class="play-pause-btn" id="stopwatch-reset" style="display: none;">Reset</button>
+        <button class="play-pause-btn" id="stopwatch-capture-last-5k" style="display: none;">Last 5k</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; align-items:center; margin-top: 10px; gap:30px">
+        <p>
+            Est Finish:
+            <input type="time" id="input-est-finish" name="input_est_finish" style="height: 30px;" step="1">
+        </p>
+        <p>
+            Last 5k:
+            <input type="time" id="input-last-5k" name="input_last_5k" style="height: 30px;" step="1">
+        </p>
+
+    </div>
+
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <script>
         // Get the URL query string
@@ -54,13 +73,14 @@
             let predictedTime = 0;
             let distance = params.get('distance') || 42;
             let trakingTimer = 0;
+            let latestStopwatchTimer = 0;
 
             const pusher = new Pusher('401f1d0958cb4236a24d', {
                 cluster: 'mt1',
                 encrypted: true
             });
 
-            const channel = pusher.subscribe('stopwatch-channel'+distance);
+            const channel = pusher.subscribe('stopwatch-channel' + distance.toString());
 
             channel.bind('stopwatch-state', function (data) {
                 if (data.value == 'pause') {
@@ -81,28 +101,68 @@
                     previousDistance = 5;
                     predictedTime = 0;
                     trakingTimer = 0;
+                    latestStopwatchTimer = 0;
                     $("#last-k").text('-');
                     $("#est-finish").text('-');
                     $("#stopwatch-capture-last-5k").hide();
+                    $("#stopwatch-reset").hide();
+                    $("#input-est-finish").val('');
+                    $("#input-last-5k").val('');
                 } else {
                     timer = setInterval(updateStopwatch, 1000);
                     $("#stopwatch-play").hide();
                     $("#stopwatch-pause").show();
                     $("#stopwatch-capture-last-5k").show();
+                    $("#stopwatch-reset").show();
                 }
             })
 
             channel.bind('stopwatch-capture-last-5k', function (data) {
-                if (previousTime == 0) {
-                    previousTime = trakingTimer;
-                } else {
-                    previousTime = previousTime + (trakingTimer - predictedTime);
-                }
-
+                previousTime = previousTime + (trakingTimer - latestStopwatchTimer);
                 predictedTime = getEstimatedFinishTime();
 
                 $("#last-k").text(formatMilliseconds(previousTime));
                 $("#est-finish").text(formatMilliseconds(predictedTime));
+                latestStopwatchTimer = trakingTimer;
+            });
+
+            channel.bind('stopwatch-est-finish', function (data) {
+                predictedTime = data.value;
+                $("#est-finish").text(formatMilliseconds(predictedTime));
+                latestStopwatchTimer = trakingTimer;
+            });
+
+            channel.bind('stopwatch-last-5k', function (data) {
+                previousTime = data.value;
+                $("#last-k").text(formatMilliseconds(previousTime));
+                predictedTime = getEstimatedFinishTime();
+                $("#est-finish").text(formatMilliseconds(predictedTime));
+            });
+
+            $("#stopwatch-play").click(function () {
+                triggerEvent('stopwatch-state', 'play');
+            });
+
+            $("#stopwatch-pause").click(function () {
+                triggerEvent('stopwatch-state', 'pause');
+            });
+
+            $("#stopwatch-reset").click(function () {
+                triggerEvent('stopwatch-state', 'reset');
+            });
+
+            $("#stopwatch-capture-last-5k").click(function () {
+                triggerEvent('stopwatch-capture-last-5k', trakingTimer);
+            });
+
+            $("#input-est-finish").change(function () {
+                let estFinish = $("#input-est-finish").val();
+                triggerEvent('stopwatch-est-finish', timeToMilliseconds(estFinish));
+            });
+
+            $("#input-last-5k").change(function () {
+                let last5k = $("#input-last-5k").val();
+                triggerEvent('stopwatch-last-5k', timeToMilliseconds(last5k));
             });
 
             function triggerEvent(eventName, value) {
@@ -160,6 +220,16 @@
                 let formattedTime = padZero(hours) + ":" + padZero(minutes) + ":" + padZero(remainingSeconds);
 
                 return formattedTime;
+            }
+
+            function timeToMilliseconds(timeString) {
+                var splitTime = timeString.split(':');
+                var hours = parseInt(splitTime[0], 10);
+                var minutes = parseInt(splitTime[1], 10);
+                var seconds = parseInt(splitTime[2], 10);
+
+                var totalMilliseconds = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000);
+                return totalMilliseconds;
             }
 
             triggerEvent('stopwatch-state', 'reset');
