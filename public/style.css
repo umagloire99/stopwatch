@@ -73,11 +73,16 @@
     }
 
     .stopwatch-input {
-        display: flex;
+        display:flex;
         justify-content: center;
         align-items: center;
         gap: 10px;
         font-size: 15px;
+    }
+    .stopwatch-input input {
+        height: 30px;
+        font-size: 15px;
+        width: 80% !important;
     }
 }
 
