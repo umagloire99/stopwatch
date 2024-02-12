@@ -39,20 +39,23 @@
     <div style="display:flex; justify-content:center; align-items:center; margin-top: 30px; gap:30px">
         <button class="play-pause-btn" id="stopwatch-play">Play</button>
         <button class="play-pause-btn" id="stopwatch-pause" style="display:none;">Pause</button>
-        <button class="play-pause-btn" id="stopwatch-reset" style="display: none;">Reset</button>
         <button class="play-pause-btn" id="stopwatch-capture-last-5k" style="display: none;">Last 5k</button>
+        <button class="play-pause-btn" id="stopwatch-reset" style="display: none;">Reset</button>
     </div>
 
-    <div style="display:flex; justify-content:center; align-items:center; margin-top: 10px; gap:30px">
-        <p>
+    <div class="stopwatch-input">
+        <div>
             Est Finish:
             <input type="time" id="input-est-finish" name="input_est_finish" style="height: 30px;" step="1">
-        </p>
-        <p>
+        </div>
+        <div>
             Last 5k:
             <input type="time" id="input-last-5k" name="input_last_5k" style="height: 30px;" step="1">
-        </p>
-
+        </div>
+        <div>
+            Stop Watch Time:
+            <input type="time" id="input-stopwatch-time" name="input_stopwatch_time" style="height: 30px;" step="1">
+        </div>
     </div>
 
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
@@ -139,6 +142,22 @@
                 $("#est-finish").text(formatMilliseconds(predictedTime));
             });
 
+            channel.bind('stopwatch-time', function (data) {
+                if (timer) {
+                    clearInterval(timer);
+                    $("#stopwatch-pause").hide();
+                    $("#stopwatch-play").show();
+                }
+                trakingTimer = data.value;
+                latestStopwatchTimer = trakingTimer;
+                hours = Math.floor(trakingTimer / 3600000);
+                minutes = Math.floor((trakingTimer % 3600000) / 60000);
+                seconds = Math.floor((trakingTimer % 60000) / 1000);
+                $('#hours').text(padZero(hours));
+                $('#minutes').text(padZero(minutes));
+                $('#seconds').text(padZero(seconds));
+            });
+
             $("#stopwatch-play").click(function () {
                 triggerEvent('stopwatch-state', 'play');
             });
@@ -163,6 +182,11 @@
             $("#input-last-5k").change(function () {
                 let last5k = $("#input-last-5k").val();
                 triggerEvent('stopwatch-last-5k', timeToMilliseconds(last5k));
+            });
+
+            $("#input-stopwatch-time").change(function () {
+                let stopwatchTime = $("#input-stopwatch-time").val();
+                triggerEvent('stopwatch-time', timeToMilliseconds(stopwatchTime));
             });
 
             function triggerEvent(eventName, value) {

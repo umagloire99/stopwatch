@@ -48,6 +48,14 @@
     /* Allow text wrapping if needed */
 }
 
+.stopwatch-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    gap: 30px;
+}
+
 @media (max-width: 768px) {
     .stopwatch-clock {
         font-size: 50px !important;
@@ -58,9 +66,18 @@
         font-size: 20px !important;
         ;
     }
+
     .play-pause-btn {
         padding: 10px 15px !important;
         font-size: 16px !important;
+    }
+
+    .stopwatch-input {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
     }
 }
 
