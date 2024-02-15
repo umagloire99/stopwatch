@@ -43,7 +43,7 @@
 
 .stopwatch-time-container p {
     margin: 0;
-    font-size: 20px;
+    font-size: 35px;
     color: red;
     /* Remove white-space: nowrap;  */
     /* Allow text wrapping if needed */
@@ -74,7 +74,7 @@
     }
 
     .stopwatch-text p {
-        font-size: 20px !important;
+        font-size: 25px !important;
         ;
     }
 
