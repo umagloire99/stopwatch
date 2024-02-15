@@ -85,6 +85,10 @@
             let trakingTimer = 0;
             let latestStopwatchTimer = 0;
 
+            if (vehicle == "00") {
+                vehicle = prompt("Please enter vehicle number:");
+            }
+
             const pusher = new Pusher('401f1d0958cb4236a24d', {
                 cluster: 'mt1',
                 encrypted: true
@@ -138,6 +142,7 @@
 
             channel.bind('stopwatch-est-finish', function (data) {
                 predictedTime = data.value;
+                $("#input-est-finish").val(formatMilliseconds(predictedTime));
                 $("#est-finish").text(formatMilliseconds(predictedTime));
                 latestStopwatchTimer = trakingTimer;
             });
