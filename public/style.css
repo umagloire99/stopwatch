@@ -42,10 +42,14 @@
 
 .stopwatch-time-container p {
     margin: 0;
-    font-size: 20px;
+    font-size: 40px;
     color: red;
     /* Remove white-space: nowrap;  */
     /* Allow text wrapping if needed */
+}
+#est-finish, #last-k {
+    font-size: 70px;
+    font-weight: bold;
 }
 
 .stopwatch-input {
@@ -57,6 +61,9 @@
 }
 
 @media (max-width: 768px) {
+    #est-finish, #last-k {
+        font-size: 40px !important;
+    }
     .stopwatch-clock {
         font-size: 50px !important;
         ;
