@@ -13,10 +13,11 @@
 
 <body>
     <div class="stopwatch-content">
-        <img src="https://www.ooredoo.qa/web/wp-content/themes/ooredoo-cms/assets/images/Ooredoo_logo.svg"
-            alt="stopwatch" style="width: 200px; height: 150px">
-        <div class="stopwatch-container" style="width: 350px;
-              height: 150px;">
+        <div style="background-color: black; padding: 15px; margin-bottom: 10px;">
+            <img src="https://www.ooredoo.qa/web/wp-content/themes/ooredoo-cms/assets/images/Ooredoo_logo.svg"
+            alt="stopwatch" style="width: 200px; height: 50px">
+        </div>
+        <div class="stopwatch-container">
             <div class="stopwatch-clock">
                 <div class="stopwatch-number" id="hours">00</div>
                 <div class="stopwatch-number">:</div>
@@ -59,6 +60,8 @@
                 style="height: 30px; width: auto;">
         </div>
     </div>
+    <p id="vehicle" style="text-align: center; color: red; font-size: 14px;"></p>
+    </p>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
@@ -78,6 +81,7 @@
             let previousDistance = 5;
             let predictedTime = 0;
             let distance = params.get('distance') || 42;
+            let vehicle = params.get('vehicle') || "00";
             let trakingTimer = 0;
             let latestStopwatchTimer = 0;
 
@@ -86,7 +90,7 @@
                 encrypted: true
             });
 
-            const channel = pusher.subscribe('stopwatch-channel' + distance.toString());
+            const channel = pusher.subscribe('stopwatch-channel' + distance.toString()+vehicle.toString());
 
             channel.bind('stopwatch-state', function (data) {
                 if (data.value == 'pause') {
@@ -177,8 +181,11 @@
                 triggerEvent('stopwatch-capture-last-5k', trakingTimer);
             });
 
+            $('#vehicle').text('Vehicle: ' + vehicle);
+
             $('#input-est-finish').timepicker({
                 timeFormat: 'HH:mm:ss',
+                interval: 1,
                 dynamic: false,
                 dropdown: true,
                 scrollbar: true,
@@ -197,6 +204,7 @@
                 dynamic: false,
                 dropdown: true,
                 scrollbar: true,
+                interval: 1,
                 change: function (time) {
                     var element = $(this),
                         text;
@@ -211,6 +219,7 @@
                 dynamic: false,
                 dropdown: true,
                 scrollbar: true,
+                interval: 1,
                 change: function (time) {
                     var element = $(this),
                         text;
@@ -223,7 +232,8 @@
             function triggerEvent(eventName, value) {
                 $.post(`/pusher/trigger/${eventName}`, {
                     value,
-                    distance
+                    distance,
+                    vehicle
                 });
             }
 

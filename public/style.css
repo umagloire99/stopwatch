@@ -8,7 +8,8 @@
 .stopwatch-container {
     background-color: black;
     border-radius: 10px;
-    padding: 40px;
+    padding-left: 5px;
+    padding-right: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -30,7 +31,6 @@
     justify-content: space-between;
     align-items: center;
     justify-self: center;
-    margin-top: 10px;
 }
 
 .stopwatch-time-container {
@@ -52,7 +52,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 40px;
+    margin-top: 20px;
     gap: 30px;
 }
 
